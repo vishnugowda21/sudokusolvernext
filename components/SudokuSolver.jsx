@@ -239,111 +239,112 @@ const SudokuSolver = () => {
   };
 
   return (
-  <div style={styles.container}>
-    <h1 style={styles.title}>Sudoku Solver</h1>
-    <div style={styles.board}>
-      {board.map((row, rowIndex) => (
-        <div key={rowIndex} style={styles.row}>
-          {row.map((cell, colIndex) => (
-            <div
-              key={colIndex}
-              style={{
-                ...styles.cell,
-                backgroundColor: selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex
-                  ? '#3498db'
-                  : cell ? '#2c3e50' : '#34495e',
-                color: '#ecf0f1',
-                borderRight: (colIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
-                borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
-              }}
-              onClick={() => handleCellClick(rowIndex, colIndex)}
-            >
-              {cell || ''}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-    {invalidBoard && (
-      <div style={styles.invalidBanner}>
-        The current board configuration is invalid.
+    <div style={styles.container}>
+      <h1 style={styles.title}>Sudoku Solver</h1>
+      <div style={styles.board}>
+        {board.map((row, rowIndex) => (
+          <div key={rowIndex} style={styles.row}>
+            {row.map((cell, colIndex) => (
+              <div
+                key={colIndex}
+                style={{
+                  ...styles.cell,
+                  backgroundColor: selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex
+                    ? '#3498db'
+                    : cell ? '#2c3e50' : '#34495e',
+                  color: '#ecf0f1',
+                  borderRight: (colIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
+                  borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
+                }}
+                onClick={() => handleCellClick(rowIndex, colIndex)}
+              >
+                {cell || ''}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
-    )}
-    <button 
-      onClick={() => setShowKeyboard(!showKeyboard)} 
-      style={styles.toggleButton}
-    >
-      {showKeyboard ? 'Hide Keyboard' : 'Show Keyboard'}
-    </button>
-    {renderNumberInput()}
-    <div style={styles.controls}>
+      {invalidBoard && (
+        <div style={styles.invalidBanner}>
+          The current board configuration is invalid.
+        </div>
+      )}
       <button 
-        onClick={solve} 
-        disabled={solving} 
-        style={{...styles.button, ...styles.solveButton}}
+        onClick={() => setShowKeyboard(!showKeyboard)} 
+        style={styles.toggleButton}
       >
-        Solve
+        {showKeyboard ? 'Hide Keyboard' : 'Show Keyboard'}
       </button>
-      <button 
-        onClick={generatePuzzle} 
-        disabled={solving} 
-        style={{...styles.button, ...styles.generateButton}}
-      >
-        Generate
-      </button>
-      <button 
-        onClick={handleClearBoard} 
-        disabled={solving} 
-        style={{...styles.button, ...styles.clearButton}}
-      >
-        Clear
-      </button>
-      <button 
-        onClick={handleCancel} 
-        disabled={!solving} 
-        style={{...styles.button, ...styles.stopButton}}
-      >
-        Stop
-      </button>
-    </div>
-    <div style={styles.difficultyControl}>
-      <label htmlFor="difficulty" style={styles.label}>Difficulty:</label>
-      <select
-        id="difficulty"
-        value={difficulty}
-        onChange={(e) => setDifficulty(e.target.value)}
-        style={styles.select}
-      >
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
-    </div>
-    <div style={styles.speedControl}>
-      <label htmlFor="speedRange" style={styles.label}>Speed: {speed}%</label>
-      <input
-        type="range"
-        id="speedRange"
-        min="1"
-        max="100"
-        value={speed}
-        onChange={(e) => setSpeed(parseInt(e.target.value, 10))}
-        style={styles.slider}
-      />
-    </div>
-    <div style={styles.visualizationControl}>
-      <label style={styles.label}>
+      {renderNumberInput()}
+      <div style={styles.controls}>
+        <button 
+          onClick={solve} 
+          disabled={solving} 
+          style={{...styles.button, ...styles.solveButton}}
+        >
+          Solve
+        </button>
+        <button 
+          onClick={generatePuzzle} 
+          disabled={solving} 
+          style={{...styles.button, ...styles.generateButton}}
+        >
+          Generate
+        </button>
+        <button 
+          onClick={handleClearBoard} 
+          disabled={solving} 
+          style={{...styles.button, ...styles.clearButton}}
+        >
+          Clear
+        </button>
+        <button 
+          onClick={handleCancel} 
+          disabled={!solving} 
+          style={{...styles.button, ...styles.stopButton}}
+        >
+          Stop
+        </button>
+      </div>
+      <div style={styles.difficultyControl}>
+        <label htmlFor="difficulty" style={styles.label}>Difficulty:</label>
+        <select
+          id="difficulty"
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+          style={styles.select}
+        >
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div style={styles.speedControl}>
+        <label htmlFor="speedRange" style={styles.label}>Speed: {speed}%</label>
         <input
-          type="checkbox"
-          checked={showVisualization}
-          onChange={(e) => setShowVisualization(e.target.checked)}
-          style={styles.checkbox}
+          type="range"
+          id="speedRange"
+          min="1"
+          max="100"
+          value={speed}
+          onChange={(e) => setSpeed(parseInt(e.target.value, 10))}
+          style={styles.slider}
         />
-        Show solving visualization
-      </label>
+      </div>
+      <div style={styles.visualizationControl}>
+        <label style={styles.label}>
+          <input
+            type="checkbox"
+            checked={showVisualization}
+            onChange={(e) => setShowVisualization(e.target.checked)}
+            style={styles.checkbox}
+          />
+          Show solving visualization
+        </label>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const styles = {
   container: {
