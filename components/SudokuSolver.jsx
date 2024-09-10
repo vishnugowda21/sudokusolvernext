@@ -194,22 +194,25 @@ const SudokuSolver = () => {
   };
 
   const handleCellChange = (value) => {
-    if (!selectedCell) return;
-    const { row, col } = selectedCell;
-    const newValue = value === 0 ? 0 : parseInt(value, 10);
-    if (isNaN(newValue) || newValue < 0 || newValue > 9) return;
+  if (!selectedCell) return;
+  const { row, col } = selectedCell;
+  const newValue = value === 0 ? 0 : parseInt(value, 10);
+  if (isNaN(newValue) || newValue < 0 || newValue > 9) return;
 
-    const newBoard = [...board];
-    newBoard[row][col] = newValue;
-    setBoard(newBoard);
-    setInvalidBoard(!validateBoard(newBoard));
+  const newBoard = [...board];
+  newBoard[row][col] = newValue;
+  const isValidBoard = validateBoard(newBoard);
+  setBoard(newBoard);
+  setInvalidBoard(!isValidBoard);
 
-    // Find and select the next empty cell
+  if (isValidBoard) {
+    // Move focus to the next cell only if the board is valid
     const nextCell = findNextCell(row, col);
     if (nextCell) {
       setSelectedCell(nextCell);
     }
-  };
+  }
+};
 
   const handleCellClick = (row, col) => {
     if (!solving) {
@@ -218,10 +221,10 @@ const SudokuSolver = () => {
   };
 
   const handleClearBoard = () => {
-    setBoard(EMPTY_BOARD.map((row) => [...row]));
-    setInvalidBoard(false);
-    setSelectedCell(null);
-  };
+  setBoard(EMPTY_BOARD.map(row => [...row]));
+  setInvalidBoard(false);
+  setSelectedCell(null); // Clear selected cell
+};
 
   const renderNumberInput = () => {
     if (!showKeyboard) return null;
