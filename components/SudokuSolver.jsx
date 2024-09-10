@@ -239,100 +239,111 @@ const SudokuSolver = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Sudoku Solver</h1>
-      <div style={styles.board}>
-        {board.map((row, rowIndex) => (
-          <div key={rowIndex} style={styles.row}>
-            {row.map((cell, colIndex) => (
-              <div
-                key={colIndex}
-                style={{
-                  ...styles.cell,
-                  backgroundColor: selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex
-                    ? '#3498db'
-                    : cell ? '#2c3e50' : '#34495e',
-                  color: '#ecf0f1',
-                  borderRight: (colIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : '1px solid #34495e',
-                  borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : '1px solid #34495e',
-                }}
-                onClick={() => handleCellClick(rowIndex, colIndex)}
-              >
-                {cell || ''}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      {invalidBoard && (
-        <div style={styles.invalidBanner}>
-          The current board configuration is invalid.
+  <div style={styles.container}>
+    <h1 style={styles.title}>Sudoku Solver</h1>
+    <div style={styles.board}>
+      {board.map((row, rowIndex) => (
+        <div key={rowIndex} style={styles.row}>
+          {row.map((cell, colIndex) => (
+            <div
+              key={colIndex}
+              style={{
+                ...styles.cell,
+                backgroundColor: selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex
+                  ? '#3498db'
+                  : cell ? '#2c3e50' : '#34495e',
+                color: '#ecf0f1',
+                borderRight: (colIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
+                borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
+              }}
+              onClick={() => handleCellClick(rowIndex, colIndex)}
+            >
+              {cell || ''}
+            </div>
+          ))}
         </div>
-      )}
-      <button 
-        onClick={() => setShowKeyboard(!showKeyboard)} 
-        style={styles.toggleButton}
-      >
-        {showKeyboard ? 'Hide Keyboard' : 'Show Keyboard'}
-      </button>
-      {renderNumberInput()}
-      <div style={styles.controls}>
-        <button 
-          onClick={solve} 
-          disabled={solving} 
-          style={styles.button}
-        >
-          Solve
-        </button>
-        <button onClick={generatePuzzle} disabled={solving} style={styles.button}>
-          Generate
-        </button>
-        <button onClick={handleClearBoard} disabled={solving} style={styles.button}>
-          Clear
-        </button>
-        <button onClick={handleCancel} disabled={!solving} style={styles.button}>
-          Stop
-        </button>
-      </div>
-      <div style={styles.difficultyControl}>
-        <label htmlFor="difficulty" style={styles.label}>Difficulty:</label>
-        <select
-          id="difficulty"
-          value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value)}
-          style={styles.select}
-        >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-      </div>
-      <div style={styles.speedControl}>
-        <label htmlFor="speedRange" style={styles.label}>Speed: {speed}%</label>
-        <input
-          type="range"
-          id="speedRange"
-          min="1"
-          max="100"
-          value={speed}
-          onChange={(e) => setSpeed(parseInt(e.target.value, 10))}
-          style={styles.slider}
-        />
-      </div>
-      <div style={styles.visualizationControl}>
-        <label style={styles.label}>
-          <input
-            type="checkbox"
-            checked={showVisualization}
-            onChange={(e) => setShowVisualization(e.target.checked)}
-            style={styles.checkbox}
-          />
-          Show solving visualization
-        </label>
-      </div>
+      ))}
     </div>
-  );
-};
+    {invalidBoard && (
+      <div style={styles.invalidBanner}>
+        The current board configuration is invalid.
+      </div>
+    )}
+    <button 
+      onClick={() => setShowKeyboard(!showKeyboard)} 
+      style={styles.toggleButton}
+    >
+      {showKeyboard ? 'Hide Keyboard' : 'Show Keyboard'}
+    </button>
+    {renderNumberInput()}
+    <div style={styles.controls}>
+      <button 
+        onClick={solve} 
+        disabled={solving} 
+        style={{...styles.button, ...styles.solveButton}}
+      >
+        Solve
+      </button>
+      <button 
+        onClick={generatePuzzle} 
+        disabled={solving} 
+        style={{...styles.button, ...styles.generateButton}}
+      >
+        Generate
+      </button>
+      <button 
+        onClick={handleClearBoard} 
+        disabled={solving} 
+        style={{...styles.button, ...styles.clearButton}}
+      >
+        Clear
+      </button>
+      <button 
+        onClick={handleCancel} 
+        disabled={!solving} 
+        style={{...styles.button, ...styles.stopButton}}
+      >
+        Stop
+      </button>
+    </div>
+    <div style={styles.difficultyControl}>
+      <label htmlFor="difficulty" style={styles.label}>Difficulty:</label>
+      <select
+        id="difficulty"
+        value={difficulty}
+        onChange={(e) => setDifficulty(e.target.value)}
+        style={styles.select}
+      >
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div style={styles.speedControl}>
+      <label htmlFor="speedRange" style={styles.label}>Speed: {speed}%</label>
+      <input
+        type="range"
+        id="speedRange"
+        min="1"
+        max="100"
+        value={speed}
+        onChange={(e) => setSpeed(parseInt(e.target.value, 10))}
+        style={styles.slider}
+      />
+    </div>
+    <div style={styles.visualizationControl}>
+      <label style={styles.label}>
+        <input
+          type="checkbox"
+          checked={showVisualization}
+          onChange={(e) => setShowVisualization(e.target.checked)}
+          style={styles.checkbox}
+        />
+        Show solving visualization
+      </label>
+    </div>
+  </div>
+);
 
 const styles = {
   container: {
@@ -359,6 +370,8 @@ const styles = {
     borderRadius: '5px',
     overflow: 'hidden',
     marginBottom: '20px',
+    borderRight: '1px solid #34495e',
+    borderBottom: '1px solid #34495e',
   },
   row: {
     display: 'grid',
@@ -374,8 +387,9 @@ const styles = {
     fontSize: '18px',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-    borderTop: '1px solid #34495e',
-    borderLeft: '1px solid #34495e',
+    border: '1px solid #34495e',
+    borderRight: 'none',
+    borderBottom: 'none',
   },
   controls: {
     display: 'flex',
@@ -386,11 +400,22 @@ const styles = {
     padding: '10px 15px',
     fontSize: '14px',
     cursor: 'pointer',
-    backgroundColor: '#3498db',
     color: '#ecf0f1',
     border: 'none',
     borderRadius: '5px',
     transition: 'background-color 0.3s',
+  },
+  solveButton: {
+    backgroundColor: '#27ae60', // Green for solve
+  },
+  generateButton: {
+    backgroundColor: '#3498db', // Blue for generate
+  },
+  clearButton: {
+    backgroundColor: '#e74c3c', // Red for clear
+  },
+  stopButton: {
+    backgroundColor: '#f39c12', // Orange for stop
   },
   difficultyControl: {
     marginTop: '20px',
