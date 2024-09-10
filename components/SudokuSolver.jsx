@@ -201,12 +201,17 @@ const SudokuSolver = () => {
 
   const newBoard = [...board];
   newBoard[row][col] = newValue;
-  const isValidBoard = validateBoard(newBoard);
   setBoard(newBoard);
-  setInvalidBoard(!isValidBoard);
 
-  if (isValidBoard) {
-    // Move focus to the next cell only if the board is valid
+  // Check if we should update invalidBoard
+  if (newValue !== 0 && !validateBoard(newBoard)) {
+    setInvalidBoard(true);
+  } else {
+    setInvalidBoard(false);
+  }
+
+  // Move to the next cell if value is not zero and the board is valid
+  if (value !== 0 && !invalidBoard && showKeyboard) {
     const nextCell = findNextCell(row, col);
     if (nextCell) {
       setSelectedCell(nextCell);
@@ -227,24 +232,27 @@ const SudokuSolver = () => {
 };
 
   const renderNumberInput = () => {
-    if (!showKeyboard) return null;
-    return (
-      <div style={styles.numberInput}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <button
-            key={num}
-            style={styles.numberButton}
-            onClick={() => handleCellChange(num)}
-          >
-            {num}
-          </button>
-        ))}
-        <button style={styles.numberButton} onClick={() => handleCellChange(0)}>
-          Clear
+  if (!showKeyboard) return null;
+  return (
+    <div style={styles.numberInput}>
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+        <button
+          key={num}
+          style={styles.numberButton}
+          onClick={() => handleCellChange(num)}
+        >
+          {num}
         </button>
-      </div>
-    );
-  };
+      ))}
+      <button
+        style={styles.numberButton}
+        onClick={() => handleCellChange(0)} // Clear button
+      >
+        Clear
+      </button>
+    </div>
+  );
+};
 
   return (
     <div style={styles.container}>
@@ -406,7 +414,7 @@ const styles = {
     fontSize: "18px",
     cursor: "pointer",
     transition: "background-color 0.3s",
-    border: "1px solid #7D8A98", // Consistent border for all cells
+    border: "1px solid #34495E", // Consistent border for all cells
     backgroundColor: "#2c3e50", // Default background color
     color: "#ecf0f1",
   },
