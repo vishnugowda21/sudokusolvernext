@@ -195,6 +195,7 @@ const SudokuSolver = () => {
 
   const handleCellChange = (value) => {
   if (!selectedCell) return;
+
   const { row, col } = selectedCell;
   const newValue = value === 0 ? 0 : parseInt(value, 10);
   if (isNaN(newValue) || newValue < 0 || newValue > 9) return;
@@ -210,7 +211,7 @@ const SudokuSolver = () => {
     setInvalidBoard(false);
   }
 
-  // Move to the next cell if value is not zero and the board is valid
+  // Move to the next cell only if value is not zero, board is valid, and we are showing the keyboard
   if (value !== 0 && !invalidBoard && showKeyboard) {
     const nextCell = findNextCell(row, col);
     if (nextCell) {
@@ -414,7 +415,7 @@ const styles = {
     fontSize: "18px",
     cursor: "pointer",
     transition: "background-color 0.3s",
-    border: "1px solid #34495E", // Consistent border for all cells
+    border: "1px solid #2c3e50", // Consistent border for all cells
     backgroundColor: "#2c3e50", // Default background color
     color: "#ecf0f1",
   },
