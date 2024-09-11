@@ -3,16 +3,25 @@ import React, { useState, useRef, useCallback } from 'react';
 const EMPTY_BOARD = Array(9).fill().map(() => Array(9).fill(0));
 
 const isValid = (board, row, col, num) => {
+  // Check row
   for (let x = 0; x < 9; x++) {
-    if (board[row][x] === num || board[x][col] === num) return false;
+    if (x !== col && board[row][x] === num) return false;
   }
+  
+  // Check column
+  for (let x = 0; x < 9; x++) {
+    if (x !== row && board[x][col] === num) return false;
+  }
+  
+  // Check 3x3 box
   let boxRow = Math.floor(row / 3) * 3;
   let boxCol = Math.floor(col / 3) * 3;
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-      if (board[boxRow + i][boxCol + j] === num) return false;
+      if ((boxRow + i !== row || boxCol + j !== col) && board[boxRow + i][boxCol + j] === num) return false;
     }
   }
+  
   return true;
 };
 
@@ -72,19 +81,26 @@ const generateSudoku = (difficulty) => {
   return board;
 };
 
-const Board = ({ board, isFixed, selectedCell, onCellClick }) => {
+const Board = ({ board, isFixed, selectedCell, onCellClick, systemFilledCells, mode }) => {
   const renderCell = (value, row, col) => {
     const isSelected = selectedCell && selectedCell.row === row && selectedCell.col === col;
-    const fixed = isFixed[row][col];
+    const isSystemFilled = mode === 'answer' && systemFilledCells[row][col];
+
+    let cellColor;
+    if (mode === 'answer') {
+      cellColor = isSystemFilled ? '#e74c3c' : '#ecf0f1';
+    } else {
+      cellColor = isFixed[row][col] ? '#e74c3c' : '#ecf0f1';
+    }
 
     return (
       <div
         key={`${row}-${col}`}
         style={{
           ...styles.cell,
-          backgroundColor: isSelected ? '#3498db' : fixed ? '#2c3e50' : '#34495e',
-          color: fixed ? '#e74c3c' : '#ecf0f1',
-          fontWeight: fixed ? 'bold' : 'normal',
+          backgroundColor: isSelected ? '#3498db' : isFixed[row][col] ? '#2c3e50' : '#34495e',
+          color: cellColor,
+          fontWeight: isFixed[row][col] || isSystemFilled ? 'bold' : 'normal',
           borderRight: (col + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
           borderBottom: (row + 1) % 3 === 0 ? '2px solid #2c3e50' : undefined,
         }}
@@ -94,6 +110,7 @@ const Board = ({ board, isFixed, selectedCell, onCellClick }) => {
       </div>
     );
   };
+
 
   return (
     <div style={styles.board}>
@@ -121,10 +138,10 @@ const NumberInput = ({ onNumberClick }) => {
         </button>
       ))}
       <button
-        style={{...styles.numberButton, ...styles.clearButton}}
+        style={{...styles.numberButton,background:"red"}}
         onClick={() => onNumberClick(0)}
       >
-        Clear
+        X
       </button>
     </div>
   );
@@ -171,6 +188,10 @@ const SudokuSolver = () => {
   const [speed, setSpeed] = useState(50);
   const [showKeyboard, setShowKeyboard] = useState(true);
   const [validationMessage, setValidationMessage] = useState('');
+  const [systemFilledCells, setSystemFilledCells] = useState(
+    Array(9).fill().map(() => Array(9).fill(false))
+  );
+  const [boardGenerated, setBoardGenerated] = useState(false);
 
   const cancelRef = useRef(false);
 
@@ -182,33 +203,45 @@ const SudokuSolver = () => {
 
   const handleNumberClick = (number) => {
     if (!selectedCell || solving) return;
-
+  
     const { row, col } = selectedCell;
+    
+    if (mode === 'solve' && !boardGenerated) {
+      setValidationMessage('Please generate a board before entering numbers.');
+      return;
+    }
+  
     if (isFixed[row][col]) return;
-
+  
     const newBoard = board.map(row => [...row]);
     newBoard[row][col] = number;
-
+  
     if (mode === 'answer') {
       if (isValid(newBoard, row, col, number) || number === 0) {
         setBoard(newBoard);
+        setSystemFilledCells(prev => {
+          const newSystemFilled = [...prev];
+          newSystemFilled[row][col] = false;
+          return newSystemFilled;
+        });
         if (isBoardFull(newBoard)) {
           setSolved(validateBoard(newBoard));
         }
       } else {
-        setValidationMessage('Invalid move. Please try again.');
+        setValidationMessage('Invalid move ❌');
         return;
       }
     } else {
       setBoard(newBoard);
     }
-
+  
     setValidationMessage('');
-
-    // Move to next empty cell
-    const nextCell = findNextEmptyCell(newBoard, row, col);
-    if (nextCell) {
-      setSelectedCell(nextCell);
+  
+    if (number !== 0) {
+      const nextCell = findNextEmptyCell(newBoard, row, col);
+      if (nextCell) {
+        setSelectedCell(nextCell);
+      }
     }
   };
 
@@ -238,6 +271,7 @@ const SudokuSolver = () => {
     setInvalidBoard(false);
     setSelectedCell(null);
     setValidationMessage('');
+    setBoardGenerated(true);  // Set this to true when a board is generated
   };
 
   const solveSudokuSync = (board, cancelRef) => {
@@ -303,18 +337,18 @@ const SudokuSolver = () => {
       if (solved && !cancelRef.current) {
         setBoard(boardCopy);
         setSolved(true);
-        setValidationMessage('Puzzle solved successfully!');
+        setValidationMessage('Solved ✔️');
       } else if (!cancelRef.current) {
-        setValidationMessage('Unable to solve the puzzle. It may be invalid or have multiple solutions.');
+        setValidationMessage('Unable to solve the puzzle ❌');
       }
     } else {
       const solved = solveSudokuSync(boardCopy, cancelRef);
       if (solved && !cancelRef.current) {
         setBoard(boardCopy);
         setSolved(true);
-        setValidationMessage('Puzzle solved successfully!');
+        setValidationMessage('Solved ✔️');
       } else if (!cancelRef.current) {
-        setValidationMessage('Unable to solve the puzzle. It may be invalid or have multiple solutions.');
+        setValidationMessage('Unable to solve the puzzle ❌');
       }
     }
     setSolving(false);
@@ -345,65 +379,85 @@ const SudokuSolver = () => {
     }
 
     if (validateBoard(board)) {
-      setValidationMessage('The current board configuration is valid.');
+      setValidationMessage('Solved ✔️');
       setSolved(true);
     } else {
-      setValidationMessage('The current board configuration is invalid.');
+      setValidationMessage('Invalid board configuration ❌');
       setSolved(false);
     }
   };
 
   const handleShowAnswer = useCallback(async () => {
     if (mode !== 'answer' || solving) return;
-
+  
     if (!validateBoard(board)) {
       setValidationMessage('The current board configuration is invalid. Please correct it before showing the answer.');
       return;
     }
-
+  
     setSolving(true);
     cancelRef.current = false;
-
+  
+    // Create a copy of the current board, preserving user inputs
     const boardCopy = board.map(row => [...row]);
-    const originalFixed = isFixed.map(row => [...row]);
-
-    for (let i = 0; i < 9; i++) {
-      for (let j = 0; j < 9; j++) {
-        if (!originalFixed[i][j]) {
-          boardCopy[i][j] = 0;
+  
+    // Create a new systemFilledCells array
+    const newSystemFilledCells = Array(9).fill().map(() => Array(9).fill(false));
+  
+    const solveSudoku = (board) => {
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          if (board[row][col] === 0) {
+            for (let num = 1; num <= 9; num++) {
+              if (isValid(board, row, col, num)) {
+                board[row][col] = num;
+                newSystemFilledCells[row][col] = true; // Mark as system-filled
+                if (solveSudoku(board)) {
+                  return true;
+                }
+                board[row][col] = 0;
+                newSystemFilledCells[row][col] = false;
+              }
+            }
+            return false;
+          }
         }
       }
+      return true;
+    };
+  
+    const solved = solveSudoku(boardCopy);
+  
+    if (solved && !cancelRef.current) {
+      setBoard(boardCopy);
+      setSystemFilledCells(newSystemFilledCells);
+      setSolved(true);
+      setValidationMessage('Solved ✔️');
+    } else if (!cancelRef.current) {
+      setValidationMessage('Unable to find a solution ❌');
     }
-
-    if (showVisualization) {
-      const solved = await solveSudokuAsync(boardCopy);
-      if (solved && !cancelRef.current) {
-        setBoard(boardCopy);
-        setIsFixed(Array(9).fill().map(() => Array(9).fill(true)));
-        setSolved(true);
-        setValidationMessage('Here is the correct solution.');
-      } else if (!cancelRef.current) {
-        setValidationMessage('Unable to find a solution. The puzzle may be invalid or have multiple solutions.');
-      }
-    } else {
-      const solved = solveSudokuSync(boardCopy, cancelRef);
-      if (solved && !cancelRef.current) {
-        setBoard(boardCopy);
-        setIsFixed(Array(9).fill().map(() => Array(9).fill(true)));
-        setSolved(true);
-        setValidationMessage('Here is the correct solution.');
-      } else if (!cancelRef.current) {
-        setValidationMessage('Unable to find a solution. The puzzle may be invalid or have multiple solutions.');
-      }
-    }
+  
     setSolving(false);
-  }, [board, isFixed, showVisualization, speed]);
+  }, [board, mode, isValid, validateBoard]);
 
   const handleModeChange = (newMode) => {
+    if (newMode === 'solve') {
+      // Initialize an empty board for Solve mode
+      setBoard(Array(9).fill().map(() => Array(9).fill(0)));
+      setIsFixed(Array(9).fill().map(() => Array(9).fill(false)));
+      setBoardGenerated(false);  // Reset this when changing to Solve mode
+    } else {
+      // For Answer mode, just clear the board
+      setBoard(Array(9).fill().map(() => Array(9).fill(0)));
+      setIsFixed(Array(9).fill().map(() => Array(9).fill(false)));
+    }
+    
+    // Common reset operations
+    setSystemFilledCells(Array(9).fill().map(() => Array(9).fill(false)));
     setMode(newMode);
-    handleClear();
-    setValidationMessage('');
     setSolved(false);
+    setSelectedCell(null);
+    setValidationMessage('');
   };
 
  return (
@@ -417,11 +471,20 @@ const SudokuSolver = () => {
         isFixed={isFixed}
         selectedCell={selectedCell}
         onCellClick={handleCellClick}
+        systemFilledCells={systemFilledCells}  // Add this line
+        mode={mode}
       />
 
-      {validationMessage && (
-        <div style={styles.validationMessage}>{validationMessage}</div>
-      )}
+{validationMessage && (
+  <div 
+    style={{
+      ...styles.validationMessage,
+      ...(validationMessage === 'Solved ✔️' ? styles.positiveMessage : styles.negativeMessage)
+    }}
+  >
+    {validationMessage}
+  </div>
+)}
 
       <div style={styles.controlPanel}>
         {mode === 'solve' && (
@@ -588,12 +651,18 @@ const styles = {
     gridColumn: 'span 2',
   },
   validationMessage: {
-    backgroundColor: '#f39c12',
-    color: '#ecf0f1',
     padding: '10px',
     textAlign: 'center',
     borderRadius: '5px',
     marginBottom: '20px',
+  },
+  positiveMessage: {
+    backgroundColor: '#4CAF50',  // Green background
+    color: 'white',
+  },
+  negativeMessage: {
+    backgroundColor: '#FFCCCB',  // Light red background
+    color: 'black',
   },
   settings: {
     marginTop: '20px',
