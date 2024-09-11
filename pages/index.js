@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic'
 
-const SudokuSolver = dynamic(() => import('../components/SudokuSolver'), { ssr: false })
+const SudokuSolver = dynamic(() => import('../components/SudokuSolverTest'), { ssr: false })
 
 export default function Home() {
   return (
